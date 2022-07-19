@@ -1,90 +1,132 @@
 #include "sort.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 /**
- * merge_subarray - merges subarrays
- * @array: array to merge
- * @output: copy array
- * @lb: index of the left element
- * @mid: index of the middle element
- * @ub: index of the right element
+ * print_left_right - print left and right partitions
+ * @array: array
+ * @size: size of second array
+ * @first: initial position
+ * @mid: middle position
  */
-void merge_subarray(int *array, int *output, size_t lb, size_t mid, size_t ub)
+void print_left_right(int *array, int size, int first, int mid)
 {
-	size_t i = lb, j = mid, k = 0;
+	int k;
 
 	printf("Merging...\n");
 	printf("[left]: ");
-	print_array(array + lb, mid - lb);
-	printf("[right]: ");
-	print_array(array + mid, ub - mid);
-
-	while (i < mid && j < ub)
+	k = first;
+	while (k < mid)
 	{
-		if (array[i] < array[j])
+		if (k != mid - 1)
+			printf("%d, ", array[k]);
+		else
+			printf("%d\n", array[k]);
+		k++;
+	}
+
+	printf("[right]: ");
+	k = mid;
+	while (k < size)
+	{
+		if (k < size - 1)
+			printf("%d, ", array[k]);
+		else
+			printf("%d\n", array[k]);
+		k++;
+	}
+}
+
+/**
+ * merge - merge the values in the position of array
+ * @array: first array
+ * @size: size of second array
+ * @cpy: copy of array
+ * @first: initial position
+ * @mid: middle position
+ * first one of the second array
+ */
+void merge(int *array, int size, int first, int mid, int *cpy)
+{
+	int i, j, k;
+
+	print_left_right(array, size, first, mid);
+
+	i = first;
+	j = mid;
+
+	printf("[Done]: ");
+	k = first;
+	while (k < size)
+	{
+		if (i < mid && (j >= size || array[i] <= array[j]))
 		{
-			output[k] = array[i];
+			cpy[k] = array[i];
 			i++;
 		}
 		else
 		{
-			output[k] = array[j];
+			cpy[k] = array[j];
 			j++;
 		}
+		if (k < size - 1)
+			printf("%d, ", cpy[k]);
+		else
+			printf("%d\n", cpy[k]);
 		k++;
 	}
-
-	while (i < mid)
-	{
-		output[k] = array[i];
-		i++, k++;
-	}
-
-	while (j < ub)
-	{
-		output[k] = array[j];
-		j++, k++;
-	}
-
-	for (k = lb, i = 0; k < ub; k++, i++)
-		array[k] = output[i];
-	printf("[Done]: ");
-	print_array(array + lb, ub - lb);
 }
-
 /**
- * merge_recursion - recursive function that merge sorts an array
- * @array: array to merge
- * @output: copy array
- * @lb: index of the left element
- * @ub: index of the right element
+ * mergeSort - array separator
+ * @cpy: copy of array
+ * @first: initial position
+ * @size: size of the original  array
+ * @array: the original array
  */
-void merge_recursion(int *array, int *output, size_t lb, size_t ub)
+void mergeSort(int *cpy, int first, int size, int *array)
 {
-	size_t mid;
+	int mid;
 
-	if (ub - lb > 1)
-	{
-		mid = (ub - lb) / 2 + lb;
-		merge_recursion(array, output, lb, mid);
-		merge_recursion(array, output, mid, ub);
-		merge_subarray(array, output, lb, mid, ub);
-	}
+	if (size - first < 2)
+		return;
+
+	mid = (size + first) / 2;
+
+	mergeSort(array, first, mid, cpy);
+	mergeSort(array, mid, size, cpy);
+
+	merge(cpy, size, first, mid, array);
+}
+/**
+ * copy_array - copy array of int
+ * @arr: array src
+ * @cpy: array dest
+ * @size : array size
+ */
+void copy_array(int *arr, int *cpy, int size)
+{
+	int i;
+
+	for (i = 0; i < (int)size; i++)
+		cpy[i] = arr[i];
 }
 
 /**
- * merge_sort - sorts an array with the Merge Sort algorithm
- * @array: array of ints to sort
- * @size: size of the array
+ * merge_sort - create partition and copy
+ * @array: array
+ * @size : array size
  */
 void merge_sort(int *array, size_t size)
 {
-	int *output;
+	int *cpy;
 
-	if (!array || size < 2)
+	cpy = malloc(sizeof(int) * size - 1);
+
+	if (cpy == NULL)
 		return;
-	output = malloc(sizeof(int) * size);
-	if (output == NULL)
-		return;
-	merge_recursion(array, output, 0, size);
-	free(output);
+
+	copy_array(array, cpy, size);
+
+	mergeSort(cpy, 0, size, array);
+	free(cpy);
 }
